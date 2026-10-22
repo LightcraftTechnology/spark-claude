@@ -5,7 +5,7 @@ characters and props, create and aim cameras with real lenses, animate them, and
 camera sees. Claude works through **sparkpy**, which edits your scenes as you, signed in with
 your Spark account. Anyone with the scene open in the web editor sees the changes live.
 
-Requires a Mac with Apple silicon on macOS 26 or later.
+Requires a Mac with Apple silicon on macOS 15 (Sequoia) or later.
 
 ## Install
 

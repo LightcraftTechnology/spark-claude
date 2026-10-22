@@ -34,6 +34,10 @@ them to complete it there; never ask for their password. On a **local** web stac
 Supabase on 127.0.0.1), `sparkpy.connect_local()` signs in as the local seed user with no
 setup, and `sparkpy login --local` remembers that for `connect()`.
 
+sparkpy works on Spark **production** unless told otherwise: `SPARK_ENV=staging` (or
+`connect(env="staging")`, `login --env staging`) picks staging, which only internal accounts
+can sign in to. `spark.env` says which one you're on; say so before your first change.
+
 ```python
 import sparkpy
 spark = sparkpy.connect()             # the session `sparkpy login` remembered (or connect_local())
