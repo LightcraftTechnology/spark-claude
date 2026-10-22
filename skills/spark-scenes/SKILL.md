@@ -30,17 +30,11 @@ neither is on PATH, they are `${CLAUDE_PLUGIN_DATA}/bin/spark-python` and
 
 If `connect()` says "not signed in", run `sparkpy login` yourself, with a timeout of at least
 5 minutes: it opens the user's browser to the Spark sign-in and waits until they finish. Tell
-them to complete it there; never ask for their password. On a **local** web stack (developers:
-Supabase on 127.0.0.1), `sparkpy.connect_local()` signs in as the local seed user with no
-setup, and `sparkpy login --local` remembers that for `connect()`.
-
-sparkpy works on Spark **production** unless told otherwise: `SPARK_ENV=staging` (or
-`connect(env="staging")`, `login --env staging`) picks staging, which only internal accounts
-can sign in to. `spark.env` says which one you're on; say so before your first change.
+them to complete it there; never ask for their password.
 
 ```python
 import sparkpy
-spark = sparkpy.connect()             # the session `sparkpy login` remembered (or connect_local())
+spark = sparkpy.connect()             # the session `sparkpy login` remembered
 spark.scenes()                        # [{id, name, production_id, scene_rev}]
 s = spark.scene("scn...")             # loads the scene and keeps it current
 ```
@@ -179,7 +173,7 @@ that has to look real.
 
 ## The scene as USD
 
-The scene compiles to a USD stage, which you can read (local sessions only):
+The scene compiles to a USD stage, which you can read:
 
 ```python
 st = s.stage("A", t=2.0)        # one setup at time t
