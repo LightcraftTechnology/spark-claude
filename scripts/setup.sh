@@ -6,7 +6,7 @@
 # Everything lives under CLAUDE_PLUGIN_DATA, which survives plugin updates:
 #   tools/uv       a pinned uv, checksum-verified (nothing global is assumed or installed)
 #   python/        the Python uv installs for the venv
-#   venv/          sparkpy and its dependencies
+#   venv/          sparkpy and its dependencies (sparkpy.requirements.txt: pinned and hashed)
 #   bin/           the two shims, the only thing put on PATH
 #   setup.log      what the last run did
 #
@@ -32,6 +32,7 @@ export UV_PYTHON_INSTALL_DIR="$DATA/python"
 export UV_CACHE_DIR="$DATA/cache"
 export UV_PYTHON_PREFERENCE=only-managed
 export UV_NO_PROGRESS=1
+export UV_NO_CONFIG=1  # the user's own uv settings don't apply here
 
 fail() {
   local msg
@@ -74,6 +75,20 @@ if ! "$VENV/bin/python" -c "import sys; sys.exit(f'{sys.version_info[0]}.{sys.ve
   "$UV" venv --python "$PYTHON_VERSION" "$VENV" >>"$LOG" 2>&1 || fail "could not create the Python $PYTHON_VERSION environment"
 fi
 
+# sparkpy's dependencies: exactly the versions in sparkpy.requirements.txt, every file checked
+# against its hash, pre-built wheels only (nothing is compiled on the user's Mac). Reinstalled
+# whenever that file changes.
+REQS="$ROOT/sparkpy.requirements.txt"
+reqs_sha=$(shasum -a 256 "$REQS" | cut -d' ' -f1)
+changed=
+if [ "$(cat "$DATA/.requirements.sha256" 2>/dev/null)" != "$reqs_sha" ]; then
+  "$UV" pip install --python "$VENV/bin/python" --require-hashes --only-binary :all: -r "$REQS" >>"$LOG" 2>&1 ||
+    fail "could not install sparkpy's dependencies"
+  changed=1
+fi
+
+# sparkpy itself, checked against SPARKPY_WHEEL_SHA256, installed without resolving anything:
+# its dependencies are the pinned ones above.
 have=$("$VENV/bin/python" -c "from importlib.metadata import version; print(version('sparkpy'))" 2>/dev/null)
 if [ -n "${SPARKPY_WHEEL:-}" ] || [ "$have" != "$SPARKPY_VERSION" ]; then
   tmp=$(mktemp -d)
@@ -84,10 +99,18 @@ if [ -n "${SPARKPY_WHEEL:-}" ] || [ "$have" != "$SPARKPY_VERSION" ]; then
     wheel="$tmp/$(basename "$SPARKPY_WHEEL_URL")"
     fetch "$SPARKPY_WHEEL_URL" "$wheel" "$SPARKPY_WHEEL_SHA256" || fail "could not download sparkpy $SPARKPY_VERSION"
   fi
-  "$UV" pip install --python "$VENV/bin/python" --reinstall-package sparkpy "$wheel" >>"$LOG" 2>&1 ||
+  "$UV" pip install --python "$VENV/bin/python" --no-deps --reinstall-package sparkpy "$wheel" >>"$LOG" 2>&1 ||
     fail "could not install sparkpy $SPARKPY_VERSION"
   rm -rf "$tmp"
-  "$UV" cache prune >>"$LOG" 2>&1  # drop superseded wheels from earlier versions
+  changed=1
+fi
+
+if [ -n "$changed" ]; then
+  # A sparkpy that needs something the pinned set lacks fails here, not at its first import.
+  "$UV" pip check --python "$VENV/bin/python" >>"$LOG" 2>&1 ||
+    fail "sparkpy's dependencies don't match sparkpy.requirements.txt"
+  echo "$reqs_sha" >"$DATA/.requirements.sha256"
+  "$UV" cache prune >>"$LOG" 2>&1  # drop files from earlier versions
 fi
 
 printf '#!/bin/sh\nexec "%s" "$@"\n' "$VENV/bin/python" >"$BIN/spark-python"

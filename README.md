@@ -26,7 +26,8 @@ To get updates automatically, turn on auto-update for the `lightcraft` marketpla
 - **The `spark-scenes` skill**, which teaches Claude how to stage, shoot and edit Spark scenes.
 - **sparkpy**, installed when a session starts into the plugin's own folder
   (`~/.claude/plugins/data/`), along with its own copy of Python. Nothing is installed
-  system-wide, and uninstalling the plugin removes it.
+  system-wide, and uninstalling the plugin removes it. sparkpy's dependencies are pinned to
+  the versions it was tested with, and every download is checked against a known hash.
 
 If something goes wrong during setup, Claude Code shows a message, and the details are in
 `setup.log` in that folder.
