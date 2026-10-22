@@ -1,0 +1,14 @@
+{
+  "name": "lightcraft",
+  "owner": {
+    "name": "Lightcraft Technology"
+  },
+  "description": "Lightcraft's Claude Code plugins.",
+  "plugins": [
+    {
+      "name": "spark",
+      "source": "./",
+      "description": "Build, shoot and edit Spark scenes from Claude Code with sparkpy."
+    }
+  ]
+}

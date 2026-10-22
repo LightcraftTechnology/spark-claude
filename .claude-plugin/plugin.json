@@ -1,0 +1,7 @@
+{
+  "name": "spark",
+  "version": "0.1.0",
+  "description": "Build, shoot and edit Spark scenes from Claude Code: stage sets, characters and props, cameras and moves, and renders, through sparkpy.",
+  "author": { "name": "Lightcraft Technology" },
+  "homepage": "https://lightcraft.pro"
+}
