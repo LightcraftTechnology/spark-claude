@@ -1,8 +1,8 @@
 # What scripts/setup.sh installs. Release CI rewrites the SPARKPY_* lines (and
 # plugin.json's version, which must equal SPARKPY_VERSION).
-SPARKPY_VERSION=0.2.0
-SPARKPY_WHEEL_URL=https://downloads.lightcraft.pro/sparkpy/0.2.0/sparkpy-0.2.0-cp313-cp313-macosx_15_0_arm64.whl
-SPARKPY_WHEEL_SHA256=0356191b8796adf3bc9465451693b36c846003a6de0a0e5a0ef4dcb9f184f97f
+SPARKPY_VERSION=0.2.1
+SPARKPY_WHEEL_URL=https://downloads.lightcraft.pro/sparkpy/0.2.1/sparkpy-0.2.1-cp313-cp313-macosx_15_0_arm64.whl
+SPARKPY_WHEEL_SHA256=bfeb0cee93ec9fe60b57d7e8d6c9a138e68f58f92bb80f00f5b859ef9c8b3c32
 # The oldest macOS the wheel's binaries load on (their LC_BUILD_VERSION minos).
 SPARKPY_MIN_MACOS=15
 PYTHON_VERSION=3.13
