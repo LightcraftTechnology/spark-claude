@@ -32,6 +32,12 @@ If `connect()` says "not signed in", run `sparkpy login` yourself, with a timeou
 5 minutes: it opens the user's browser to the Spark sign-in and waits until they finish. Tell
 them to complete it there; never ask for their password.
 
+In Claude Code's sandbox sparkpy can use the sign-in but not renew it; the plugin renews it
+when a session starts, which lasts about an hour. If sparkpy says the sign-in "needs renewing"
+(or `login` can't save it), run `sparkpy renew` (or `sparkpy login`) with the sandbox off: that
+asks the user's permission, which is the point. Don't run other sparkpy code unsandboxed to get
+around it.
+
 ```python
 import sparkpy
 spark = sparkpy.connect()             # the session `sparkpy login` remembered

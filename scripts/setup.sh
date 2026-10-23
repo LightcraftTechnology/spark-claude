@@ -117,6 +117,12 @@ printf '#!/bin/sh\nexec "%s" "$@"\n' "$VENV/bin/python" >"$BIN/spark-python"
 printf '#!/bin/sh\nexec "%s" -m sparkpy "$@"\n' "$VENV/bin/python" >"$BIN/sparkpy"
 chmod +x "$BIN/spark-python" "$BIN/sparkpy"
 
+# Claude Code's sandbox lets sparkpy read the sign-in but not renew it (renewing there would
+# spend the refresh token without saving the next one). Hooks run outside the sandbox, so
+# renew it here: about an hour of sandboxed work from each session start. In the background,
+# so an offline start isn't held up; it's done long before Claude's first sparkpy call.
+("$BIN/sparkpy" renew --quiet >>"$LOG" 2>&1 &)
+
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   printf 'export PATH="%s:$PATH"\n' "$BIN" >>"$CLAUDE_ENV_FILE"
 fi
