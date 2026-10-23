@@ -21,10 +21,10 @@ collaborator — look first, change little, check, and undo what you don't want.
 
 ## Connect
 
-This plugin installs sparkpy in its own Python. Run sparkpy code with **`spark-python`** (a
-script file, or `spark-python - <<'EOF'` for a short one), never the system `python`, and don't
-pip-install sparkpy anywhere else. The command line is **`sparkpy`** (`sparkpy whoami`). If
-neither is on PATH, they are `${CLAUDE_PLUGIN_DATA}/bin/spark-python` and
+This plugin installs sparkpy in its own Python. Run sparkpy code with **`spark-python`**:
+write it to a script file and run `spark-python that_file.py`, never the system `python`,
+and don't pip-install sparkpy anywhere else. The command line is **`sparkpy`** (`sparkpy
+whoami`). If neither is on PATH, they are `${CLAUDE_PLUGIN_DATA}/bin/spark-python` and
 `${CLAUDE_PLUGIN_DATA}/bin/sparkpy`; if they don't exist, the plugin's setup failed (its log is
 `${CLAUDE_PLUGIN_DATA}/setup.log`): say so rather than working around it.
 
@@ -32,11 +32,15 @@ If `connect()` says "not signed in", run `sparkpy login` yourself, with a timeou
 5 minutes: it opens the user's browser to the Spark sign-in and waits until they finish. Tell
 them to complete it there; never ask for their password.
 
-In Claude Code's sandbox sparkpy can use the sign-in but not renew it; the plugin renews it
-when a session starts, which lasts about an hour. If sparkpy says the sign-in "needs renewing"
-(or `login` can't save it), run `sparkpy renew` (or `sparkpy login`) with the sandbox off: that
-asks the user's permission, which is the point. Don't run other sparkpy code unsandboxed to get
-around it.
+**Claude Code's sandbox.** sparkpy can't work inside it: renders need the GPU, which the
+sandbox blocks ("no Metal device"), and it can't save the sign-in ("needs renewing", or
+"Operation not permitted" under `~/.config/sparkpy` or `~/Library/Caches/sparkpy`). If you see
+those, ask the user to let sparkpy's commands run outside the sandbox, in `~/.claude/settings.json`:
+`"sandbox": {"excludedCommands": ["spark-python *", "sparkpy *"]}`. Don't edit their settings
+without asking, and don't switch the sandbox off for each call instead. Run sparkpy as a plain
+`spark-python file.py` or `sparkpy ...` call, with no heredoc, `cd`, pipe or redirect in the
+same command, or the call stays in the sandbox. To see less output, print less from the
+script; don't pipe it through `grep` or `head`.
 
 ```python
 import sparkpy
