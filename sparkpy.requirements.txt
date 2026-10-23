@@ -1,4 +1,4 @@
-# sparkpy's dependencies: the exact versions sparkpy 0.2.0 was tested with, and the hash of
+# sparkpy's dependencies: the exact versions sparkpy 0.2.1 was tested with, and the hash of
 # every file PyPI has for each. scripts/setup.sh installs only these (--require-hashes, wheels
 # only), then the sparkpy wheel itself without resolving anything, so a new or tampered release
 # of a dependency never reaches a user's Mac. Regenerate it with every sparkpy release.
