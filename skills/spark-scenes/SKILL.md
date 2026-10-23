@@ -158,8 +158,11 @@ between (90° apart is safe).
 ## Assets
 
 ```python
+found = s.assets.list("office chair")[0]             # this production's files and the Spark Library, by name
+s.assets.list(category="object", subcategory="character", source="library")
+s.assets.place(found["id"], position=[1, 0, 2])      # object.place (undoable); a library id is imported first
 a = s.assets.upload("chair.usdz", "object")          # into this scene's production; "location", "audio" too
-s.assets.place(a.asset_id, position=[1, 0, 2])       # object.place (undoable)
+s.assets.place(a.asset_id, position=[1, 0, 2])
 e = s.assets.edit("sobj...", [                       # copy-on-edit: a NEW file, the object repointed
     {"op": "set_color", "prim": "/root/seat", "color": [0.8, 0.1, 0.1]},
     {"op": "set_visible", "prim": "/root/cushion", "visible": False},
@@ -168,12 +171,18 @@ e = s.assets.edit("sobj...", [                       # copy-on-edit: a NEW file,
 s.undo()                                             # points the object back; the edited file stays
 ```
 
-An upload or library import (`s.assets.import_from_library(id)`) adds a file to the production.
-It is not a scene change and can't be undone. Upload only what the user asked for. Prim paths
-are absolute paths inside the asset (`describe_scene` lists an object's pinned prims). An edit
-changes only the object you name. Other objects using the same file keep the original.
+Look for an existing asset before uploading or making one: `list` searches the production's
+files and the Spark Library (all words must be in the name; `category`: object, location, audio;
+`subcategory`: character, vehicle, prop, primitive, interior, exterior; `source`: production,
+library or all). Each result says where it's from and how many objects in this scene use it.
+Placing a library asset imports it into the production the first time; later placements reuse
+that copy. An upload or library import adds a file to the production. It is not a scene change
+and can't be undone. Upload only what the user asked for. Prim paths are absolute paths inside
+the asset (`describe_scene` lists an object's pinned prims). An edit changes only the object you
+name. Other objects using the same file keep the original.
 
-**Making assets.** When the user wants something that doesn't exist yet (a stand-in table, a
+**Making assets.** When nothing in `list` will do and the user wants something that doesn't exist
+yet (a stand-in table, a
 doorway, a marker), you can write it: a `.usda` text file is enough (no USD library needed).
 Build it the way the web editor can draw it, because `s.render` draws more than the browser
 does and a render that looks right doesn't prove the user will see it:
