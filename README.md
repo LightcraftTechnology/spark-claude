@@ -21,6 +21,23 @@ first time, it opens your browser to sign in to Spark.
 To get updates automatically, turn on auto-update for the `lightcraft` marketplace in
 `/plugin` → Marketplaces. Otherwise run `claude plugin update spark@lightcraft`.
 
+## If you use Claude Code's sandbox
+
+sparkpy renders on your Mac's GPU, and Claude Code's sandbox blocks the GPU (it also keeps
+sparkpy from saving your sign-in). If you've turned the sandbox on, let sparkpy's two commands
+run outside it by adding this to `~/.claude/settings.json`:
+
+```json
+{
+  "sandbox": {
+    "excludedCommands": ["spark-python *", "sparkpy *"]
+  }
+}
+```
+
+Those commands then ask for permission like any other command outside the sandbox. Everything
+else Claude runs stays sandboxed.
+
 ## What it installs
 
 - **The `spark-scenes` skill**, which teaches Claude how to stage, shoot and edit Spark scenes.

@@ -1,6 +1,6 @@
 ---
 name: spark-scenes
-description: "Build and edit Spark (Lightcraft) scenes from Python with sparkpy — stage sets, characters and props (Gaussian splats and USD assets: upload, author, place, edit), create and aim cameras (shots) with real lenses, animate objects and cameras (keys, camera moves, the assets' own animation), read the scene as data or as USD, render what a camera sees to check the work, and undo. Use when the user wants to block out, stage, animate, shoot or look at a Spark scene: previs, layout, shots, coverage, camera moves."
+description: "Build and edit Spark (Lightcraft) scenes from Python with sparkpy — stage sets, characters and props (Gaussian splats and USD assets: upload, author, place, edit), create and aim cameras (shots) with real lenses, animate objects and cameras (keys, camera moves, the assets' own animation), read the scene as data or as USD, render what a camera sees to check the work, cut shots into an edit in Spark's Editor, and undo. Use when the user wants to block out, stage, animate, shoot, cut or look at a Spark scene: previs, layout, shots, coverage, camera moves, animatics and edits."
 ---
 
 # Spark scenes with sparkpy
@@ -21,16 +21,26 @@ collaborator — look first, change little, check, and undo what you don't want.
 
 ## Connect
 
-This plugin installs sparkpy in its own Python. Run sparkpy code with **`spark-python`** (a
-script file, or `spark-python - <<'EOF'` for a short one), never the system `python`, and don't
-pip-install sparkpy anywhere else. The command line is **`sparkpy`** (`sparkpy whoami`). If
-neither is on PATH, they are `${CLAUDE_PLUGIN_DATA}/bin/spark-python` and
+This plugin installs sparkpy in its own Python. Run sparkpy code with **`spark-python`**:
+write it to a script file and run `spark-python that_file.py`, never the system `python`,
+and don't pip-install sparkpy anywhere else. The command line is **`sparkpy`** (`sparkpy
+whoami`). If neither is on PATH, they are `${CLAUDE_PLUGIN_DATA}/bin/spark-python` and
 `${CLAUDE_PLUGIN_DATA}/bin/sparkpy`; if they don't exist, the plugin's setup failed (its log is
 `${CLAUDE_PLUGIN_DATA}/setup.log`): say so rather than working around it.
 
 If `connect()` says "not signed in", run `sparkpy login` yourself, with a timeout of at least
 5 minutes: it opens the user's browser to the Spark sign-in and waits until they finish. Tell
 them to complete it there; never ask for their password.
+
+**Claude Code's sandbox.** sparkpy can't work inside it: renders need the GPU, which the
+sandbox blocks ("no Metal device"), and it can't save the sign-in ("needs renewing", or
+"Operation not permitted" under `~/.config/sparkpy` or `~/Library/Caches/sparkpy`). If you see
+those, ask the user to let sparkpy's commands run outside the sandbox, in `~/.claude/settings.json`:
+`"sandbox": {"excludedCommands": ["spark-python *", "sparkpy *"]}`. Don't edit their settings
+without asking, and don't switch the sandbox off for each call instead. Run sparkpy as a plain
+`spark-python file.py` or `sparkpy ...` call, with no heredoc, `cd`, pipe or redirect in the
+same command, or the call stays in the sandbox. To see less output, print less from the
+script; don't pipe it through `grep` or `head`.
 
 ```python
 import sparkpy
@@ -165,11 +175,58 @@ changes only the object you name. Other objects using the same file keep the ori
 
 **Making assets.** When the user wants something that doesn't exist yet (a stand-in table, a
 doorway, a marker), you can write it: a `.usda` text file is enough (no USD library needed).
-Say `metersPerUnit = 1`, `upAxis = "Y"` and a `defaultPrim`; build from `Cube`, `Cylinder`,
-`Sphere` or `Mesh` prims with `primvars:displayColor`, at real size. Then `upload` and `place`
-it like any other file. A splat is a `.ply` of Gaussians, which code can write too. Generated
-assets are stand-ins: say so, and prefer the user's own captures and library assets for anything
-that has to look real.
+Build it the way the web editor can draw it, because `s.render` draws more than the browser
+does and a render that looks right doesn't prove the user will see it:
+
+- Geometry: **`Mesh` prims only**, with `subdivisionScheme = "none"`. The editor skips `Cube`,
+  `Sphere`, `Cylinder` and the other shape prims: they render here and are invisible there.
+- Colour: a bound **`UsdPreviewSurface`** material (`inputs:diffuseColor`). The editor ignores
+  `primvars:displayColor`, and `s.assets.edit`'s `set_color` only changes a material.
+- `metersPerUnit = 1`, `upAxis = "Y"`, a `defaultPrim`, real size.
+
+```usda
+#usda 1.0
+(
+    defaultPrim = "Table"
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+
+def Xform "Table" (kind = "component")
+{
+    def Mesh "Top" (prepend apiSchemas = ["MaterialBindingAPI"])
+    {
+        point3f[] points = [(-0.6, 0.72, -0.4), (0.6, 0.72, -0.4), (0.6, 0.75, -0.4), (-0.6, 0.75, -0.4),
+                            (-0.6, 0.72, 0.4), (0.6, 0.72, 0.4), (0.6, 0.75, 0.4), (-0.6, 0.75, 0.4)]
+        int[] faceVertexCounts = [4, 4, 4, 4, 4, 4]
+        int[] faceVertexIndices = [0, 3, 2, 1, 4, 5, 6, 7, 0, 1, 5, 4, 3, 7, 6, 2, 0, 4, 7, 3, 1, 2, 6, 5]
+        float3[] extent = [(-0.6, 0.72, -0.4), (0.6, 0.75, 0.4)]
+        uniform token subdivisionScheme = "none"
+        rel material:binding = </Table/Looks/Wood>
+    }
+
+    def Scope "Looks"
+    {
+        def Material "Wood"
+        {
+            token outputs:surface.connect = </Table/Looks/Wood/Surface.outputs:surface>
+
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.45, 0.3, 0.2)
+                float inputs:roughness = 0.8
+                token outputs:surface
+            }
+        }
+    }
+}
+```
+
+That is one box (faces wound counter-clockwise from outside); write a small function that emits
+one per part. Then `upload` and `place` it like any other file. A splat is a `.ply` of
+Gaussians, which code can write too. Generated assets are stand-ins: say so, and prefer the
+user's own captures and library assets for anything that has to look real.
 
 ## The scene as USD
 
@@ -201,6 +258,38 @@ revision, so asking again is free. `frames` measures **projected bounds** only (
 is `"unknown"`); the beauty render shows whether something is actually hidden. USD objects are
 lit like the apps light them (the Spark Studio environment map); an asset's own animation
 shows only where a clip plays it (see Animation).
+
+## Cut an edit
+
+When the user wants an edit, a cut, an animatic or a sequence, make it **in Spark's Editor**,
+not as a video file: the Editor is where they watch, trim and export it, with their team. Don't
+render frames into an mp4 of your own unless they ask for a file.
+
+A shot plays in the Editor as its **preview**, a video rendered from the scene and stored on the
+shot. Render it first (it takes a few seconds per second of shot), then place it:
+
+```python
+s.preview_status()                       # each shot: fresh / outdated / still / missing
+p = s.render_preview("Wide")             # renders and records it; skipped if it's current
+e = spark.edits.create(production_id, "Coffee shop animatic")    # lanes V1 (video) and A1 (audio)
+e.add(shot="Wide")                       # appended to V1: the whole preview
+e.add(shot="Close", source_in=1.0, duration=2.5)                 # from 1 s into it, for 2.5 s
+e.add(file=music_file_id, start=0)       # an audio file on A1
+print(e.describe()); print(e.url)        # the cut, and the link to give the user
+```
+
+- A preview covers the camera's keys and recorded moves, or the motion of what it's parented
+  to. A **locked-off camera is a still**, one frame however long its clip, even when things move
+  in front of it. To show the action, give it a length: `s.shot.hold(shot, start, end)` keys it
+  at its pose at both ends (it doesn't move; one undo step), then `s.render_preview(shot)`.
+- After changing a scene, render its previews again: `preview_status` says which are outdated,
+  and `add` warns about them.
+- `e.add` returns the clip with `warnings`; it refuses overlaps on a lane (trim with
+  `e.update(clip_id, start=, duration=, source_in=)`, `e.delete(clip_ids)`, or `e.add_track("video")`).
+  Times snap to the edit's frame rate. Find edits with `spark.edits.list(production_id)` and
+  open one with `spark.edits.open(edit_id)`.
+- Edits aren't scene changes: **`s.undo()` doesn't undo them**. Undo by hand (`e.delete`), and
+  check `e.describe()` before telling the user it's done.
 
 ## Undo
 
