@@ -1,0 +1,4 @@
+# setup.sh and the lock it sources run in bash, on Windows too (Git Bash), where a
+# checkout with core.autocrlf would otherwise give them CRLF line ends that bash can't read.
+*.sh text eol=lf
+sparkpy.lock text eol=lf
