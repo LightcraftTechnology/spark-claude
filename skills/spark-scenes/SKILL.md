@@ -5,40 +5,12 @@ description: "Build and edit Spark (Lightcraft) scenes from Python with sparkpy 
 
 # Spark scenes with sparkpy
 
-This plugin installs sparkpy in its own Python. Everything about working in Spark (what it is,
-the conventions, the API, cameras, animation, assets, edits) is in **sparkpy's guide**, which
-always matches the installed sparkpy. **Before any Spark work, run `sparkpy guide` and follow
-it.** It points to topic guides: read the one for a kind of work with `sparkpy guide <topic>`
-(e.g. `sparkpy guide cameras`) before doing it. Skip its "Install and connect" steps for
-installing: this plugin has done that. What differs here:
+This plugin installs sparkpy, and puts its two commands on PATH: `spark-python` (runs sparkpy
+code) and `sparkpy` (its command line). If they aren't on PATH, they are in
+`${CLAUDE_PLUGIN_DATA}/bin` (`.cmd` versions there, for PowerShell on Windows); if they aren't there either, the plugin's setup failed (its log is
+`${CLAUDE_PLUGIN_DATA}/setup.log`): say so rather than working around it.
 
-## Running sparkpy here
-
-Run sparkpy code with **`spark-python`**: write it to a script file and run
-`spark-python that_file.py`, never the system `python`, and don't pip-install sparkpy anywhere
-else. The command line is **`sparkpy`** (`sparkpy whoami`, `sparkpy guide`). If neither is on
-PATH, they are `${CLAUDE_PLUGIN_DATA}/bin/spark-python` and `${CLAUDE_PLUGIN_DATA}/bin/sparkpy`;
-if they don't exist, the plugin's setup failed (its log is `${CLAUDE_PLUGIN_DATA}/setup.log`):
-say so rather than working around it.
-
-**On Windows**, both are on PATH in the Bash tool (Git Bash), so prefer it for sparkpy. In
-PowerShell they aren't: run `& "${CLAUDE_PLUGIN_DATA}/bin/spark-python.cmd" that_file.py` and
-`& "${CLAUDE_PLUGIN_DATA}/bin/sparkpy.cmd" whoami`. Either way sparkpy reads and writes
-UTF-8. Renders draw in a headless Edge or Chrome (or the plugin's own Chromium) on the GPU.
-
-If `connect()` says "not signed in", run `sparkpy login` yourself, with a timeout of at least
-5 minutes: it opens the user's browser to the Spark sign-in and waits until they finish. Tell
-them to complete it there; never ask for their password.
-
-Changes are recorded as made by `claude-code` on the signed-in person's behalf without passing
-`actor=`; `sparkpy.connect()` is enough.
-
-**Claude Code's sandbox** (on a Mac; Windows has none). sparkpy can't work inside it: renders need the GPU, which the
-sandbox blocks ("no Metal device"), and it can't renew the sign-in ("needs renewing", or
-"Operation not permitted" under `~/.config/sparkpy` or `~/Library/Caches/sparkpy`). If you see
-those, ask the user to let sparkpy's commands run outside the sandbox, in `~/.claude/settings.json`:
-`"sandbox": {"excludedCommands": ["spark-python *", "sparkpy *"]}`. Don't edit their settings
-without asking, and don't switch the sandbox off for each call instead. Run sparkpy as a plain
-`spark-python file.py` or `sparkpy ...` call, with no heredoc, `cd`, pipe or redirect in the
-same command, or the call stays in the sandbox. To see less output, print less from the
-script; don't pipe it through `grep` or `head`.
+Everything about working in Spark is in **sparkpy's guide**. **Before any Spark work, run
+`sparkpy guide` and follow it.** It points to topic guides: read the one for a kind of work with
+`sparkpy guide <topic>` (e.g. `sparkpy guide cameras`) before doing it. Skip its installer:
+this plugin has installed sparkpy.
