@@ -1,8 +1,8 @@
 # What scripts/setup.sh installs. Release CI rewrites the SPARKPY_* lines (and
 # plugin.json's version, which must equal SPARKPY_VERSION).
 SPARKPY_VERSION=0.4.0
-SPARKPY_WHEEL_URL=
-SPARKPY_WHEEL_SHA256=
+SPARKPY_WHEEL_URL=https://downloads.lightcraft.pro/sparkpy/0.4.0/sparkpy-0.4.0-cp313-cp313-macosx_15_0_arm64.whl
+SPARKPY_WHEEL_SHA256=2a0e26cbb3ef9c64bead02bf3010e9558cea3db2f0e5b3a776b109b7fd8845d1
 # The Windows x64 wheel, for the same SPARKPY_VERSION. Empty until one is published: setup
 # then says so on Windows.
 SPARKPY_WINDOWS_WHEEL_URL=https://downloads.lightcraft.pro/sparkpy/0.4.0/sparkpy-0.4.0-cp313-cp313-win_amd64.whl
