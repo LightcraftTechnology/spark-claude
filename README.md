@@ -1,8 +1,8 @@
 # Spark for Claude Code
 
 Build, shoot and edit [Spark](https://lightcraft.pro) scenes from Claude Code: stage sets,
-characters and props, create and aim cameras with real lenses, animate them, and render what a
-camera sees. Claude works through **sparkpy**, which edits your scenes as you, signed in with
+characters and props, create and aim cameras with real lenses, animate them, render what a
+camera sees, and give a script's characters voices to hear its lines in your scenes. Claude works through **sparkpy**, which edits your scenes as you, signed in with
 your Spark account. Anyone with the scene open in the web editor sees the changes live.
 
 Requires one of:
